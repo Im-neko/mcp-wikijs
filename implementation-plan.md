@@ -8,6 +8,7 @@
    - TypeScript project configuration
    - Dependencies installation (MCP SDK, GraphQL client, etc.)
    - Build and test setup
+   - Docker development environment setup
 
 2. **Configuration Management Module Implementation**
    - Environment variable loading
@@ -52,15 +53,32 @@
 1. **Integration Testing**
    - E2E tests (against actual WikiJS instance)
    - Mock tests
+   - Docker-based integration tests
 
 2. **Documentation Creation**
    - Installation instructions
    - Usage guide
    - API specifications
+   - Docker development guide
 
 3. **Packaging**
    - npm package configuration
    - Executable script setup
+
+## Development Environment
+
+### Standard Development
+- Node.js 18+
+- TypeScript
+- Local environment variables through .env
+
+### Docker Development Environment
+- Docker Compose with:
+  - PostgreSQL database
+  - WikiJS server
+  - MCP-WikiJS service with hot-reload
+- Isolated network
+- Volume mounts for code development and database persistence
 
 ## Required Dependencies
 
@@ -109,6 +127,9 @@ mcp-wikijs/
 │   ├── wikijs.test.ts
 │   └── mcp.test.ts
 ├── .env.example
+├── docker-compose.yaml
+├── Dockerfile.dev
+├── DOCKER.md
 ├── package.json
 ├── tsconfig.json
 └── README.md

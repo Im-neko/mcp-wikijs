@@ -53,8 +53,19 @@
 ## Deployment
 
 ### Development Environment
-- Local WikiJS instance (Docker)
-- Configuration via environment variables
+
+#### Local Development
+- Node.js runtime
+- Environment variables via `.env` file
+- Hot reload with ts-node
+
+#### Docker Development Environment
+- Docker Compose setup with:
+  - PostgreSQL database container
+  - WikiJS container with GraphQL API
+  - MCP-WikiJS container with hot reload
+- Isolated network for service communication
+- Volume mounts for persistent data and code changes
 
 ### Production Environment
 - Distributed as npm package
@@ -64,9 +75,38 @@
   - `WIKIJS_TOKEN` - API authentication token
   - `MCP_PORT` - MCP server port number (default: 8080)
 
+## Docker Architecture
+
+```
+┌─────────────────────────────────────┐
+│           Docker Network            │
+│                                     │
+│  ┌───────────┐  ┌───────────────┐   │
+│  │           │  │               │   │
+│  │ PostgreSQL│◄─┤    WikiJS     │   │
+│  │           │  │               │   │
+│  └───────────┘  └───────┬───────┘   │
+│                         │           │
+│                         ▼           │
+│                 ┌───────────────┐   │
+│                 │               │   │
+│                 │  MCP-WikiJS   │   │
+│                 │               │   │
+│                 └───────────────┘   │
+│                         ▲           │
+└─────────────────────────┼───────────┘
+                          │
+                  ┌───────────────┐
+                  │               │
+                  │ LLM Client    │
+                  │               │
+                  └───────────────┘
+```
+
 ## Security Considerations
 
 - Secure management of authentication information
 - MCP request validation
 - Rate limiting implementation
 - Error handling and logging
+- Network isolation in Docker environment

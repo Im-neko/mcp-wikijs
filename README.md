@@ -13,6 +13,7 @@ An MCP (Model Context Protocol) server for [WikiJS](https://js.wiki/) that allow
   - Create new documents
   - Update existing documents
   - Delete documents
+- Docker-ready for easy development setup
 
 ## Installation
 
@@ -53,6 +54,21 @@ const results = await mcpClient.callTool('search', {
 });
 ```
 
+## Docker Development Environment
+
+For development purposes, this project includes a Docker Compose setup that starts:
+- A PostgreSQL database
+- A WikiJS instance
+- The MCP-WikiJS server with hot-reload
+
+To start the development environment:
+
+```bash
+docker-compose up
+```
+
+For detailed instructions, see the [Docker guide](./DOCKER.md).
+
 ## Available Tools
 
 - **search** - Search for wiki pages by query
@@ -83,9 +99,11 @@ See the [examples directory](./examples) for detailed usage examples, including:
 
 ## Development
 
+### Standard Development
+
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/mcp-wikijs.git
+git clone https://github.com/im-neko/mcp-wikijs.git
 cd mcp-wikijs
 
 # Install dependencies
@@ -101,6 +119,16 @@ npm run build
 npm test
 ```
 
+### Docker Development
+
+See the [Docker guide](./DOCKER.md) for instructions on setting up a complete development environment with Docker.
+
+## Project Documentation
+
+- [Architecture Document](./architecture.md) - Detailed design of the system
+- [Implementation Plan](./implementation-plan.md) - Development phases and schedule
+- [Docker Guide](./DOCKER.md) - Development with Docker
+
 ## Architecture
 
 This project follows a modular architecture with clear separation of concerns:
@@ -108,8 +136,6 @@ This project follows a modular architecture with clear separation of concerns:
 - **WikiJS client**: Handles communication with WikiJS GraphQL API
 - **MCP server**: Implements the Model Context Protocol
 - **Tools**: Implements specific operations (search, read, update, etc.)
-
-For more details, see the [architecture document](./architecture.md).
 
 ## License
 
