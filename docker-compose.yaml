@@ -1,0 +1,64 @@
+version: '3'
+
+services:
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: wiki
+      POSTGRES_PASSWORD: wikijsrocks
+      POSTGRES_USER: wikijs
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    restart: unless-stopped
+    networks:
+      - wikinet
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U wikijs"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  wiki:
+    image: requarks/wiki:2
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DB_TYPE: postgres
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USER: wikijs
+      DB_PASS: wikijsrocks
+      DB_NAME: wiki
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    networks:
+      - wikinet
+
+  mcp-wikijs:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    volumes:
+      - .:/app
+      - /app/node_modules
+    environment:
+      - WIKIJS_URL=http://wiki:3000
+      - WIKIJS_TOKEN=${WIKIJS_TOKEN}
+      - MCP_PORT=8080
+      - MCP_HOST=0.0.0.0
+      - LOG_LEVEL=debug
+    ports:
+      - "8080:8080"
+    depends_on:
+      - wiki
+    networks:
+      - wikinet
+    command: npm run dev
+
+networks:
+  wikinet:
+
+volumes:
+  db-data:
