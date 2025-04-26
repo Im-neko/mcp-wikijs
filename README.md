@@ -17,7 +17,16 @@ An MCP (Model Context Protocol) server for [WikiJS](https://js.wiki/) that allow
 
 ## Installation
 
-for claude 
+### build
+
+```bash
+cd mcp-wikijs
+npm run build
+```
+
+### add mcp server 
+
+#### for claude 
 
 ```json
 {
