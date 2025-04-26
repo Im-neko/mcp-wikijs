@@ -24,7 +24,7 @@ for claude
   "mcpServers": {
     "wikijs": {
       "command": "node",
-      "args": ["-y", "@im-neko/mcp-wikijs"],
+      "args": ["path/to/mcp-wikijs/dist/index.js"],
       "env": {
         "WIKIJS_URL": "https://example.com",
         "WIKIJS_TOKEN": "YOUR_API_TOKEN"
