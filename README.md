@@ -17,46 +17,27 @@ An MCP (Model Context Protocol) server for [WikiJS](https://js.wiki/) that allow
 
 ## Installation
 
-```bash
-# Install as a dependency
-npm install mcp-wikijs
+for claude 
 
-# Or run directly with npx
-npx mcp-wikijs
-```
-
-## Quick Start
-
-1. Set up environment variables in a `.env` file:
-
-```
-WIKIJS_URL=http://your-wikijs-url
-WIKIJS_TOKEN=your-api-token
-MCP_PORT=8080
-```
-
-2. Start the MCP server:
-
-```bash
-npx mcp-wikijs
-```
-
-3. Connect from your MCP-compatible client:
-
-```javascript
-const mcpClient = new MCPClient('http://localhost:8080');
-await mcpClient.init();
-
-// Search for documents
-const results = await mcpClient.callTool('search', {
-  query: 'project documentation',
-  limit: 5
-});
+```json
+{
+  "mcpServers": {
+    "wikijs": {
+      "command": "node",
+      "args": ["-y", "@im-neko/mcp-wikijs"],
+      "env": {
+        "WIKIJS_URL": "https://example.com",
+        "WIKIJS_TOKEN": "YOUR_API_TOKEN"
+      }
+    }
+  }
+}
 ```
 
 ## Docker Development Environment
 
 For development purposes, this project includes a Docker Compose setup that starts:
+
 - A PostgreSQL database
 - A WikiJS instance
 - The MCP-WikiJS server with hot-reload
@@ -80,6 +61,7 @@ For detailed instructions, see the [Docker guide](./DOCKER.md).
 ## Examples
 
 See the [examples directory](./examples) for detailed usage examples, including:
+
 - Integrating with chat applications
 - Document search and retrieval
 - Content creation and management
@@ -109,14 +91,11 @@ cd mcp-wikijs
 # Install dependencies
 npm install
 
-# Run in development mode
-npm run dev
-
 # Build
 npm run build
 
-# Test
-npm test
+# Debug
+npx @modelcontextprotocol/inspector node dist/index.js 
 ```
 
 ### Docker Development
@@ -132,6 +111,7 @@ See the [Docker guide](./DOCKER.md) for instructions on setting up a complete de
 ## Architecture
 
 This project follows a modular architecture with clear separation of concerns:
+
 - **Configuration management**: Environment variables and settings
 - **WikiJS client**: Handles communication with WikiJS GraphQL API
 - **MCP server**: Implements the Model Context Protocol
