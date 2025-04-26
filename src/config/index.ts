@@ -14,7 +14,8 @@ const createConfig = (): Config => {
       },
       mcp: {
         port: process.env.MCP_PORT ? parseInt(process.env.MCP_PORT, 10) : undefined,
-        host: process.env.MCP_HOST
+        host: process.env.MCP_HOST,
+        transport: process.env.MCP_TRANSPORT as 'http' | 'stdio' | undefined
       },
       logging: {
         level: process.env.LOG_LEVEL

@@ -1,22 +1,21 @@
 import mcpServer from './mcp/server';
 
-// メイン関数
+// Main function
 async function main() {
   try {
-    // MCPサーバー起動
+    // Start MCP server with stdio transport
     await mcpServer.start();
     
-    // シグナルハンドリング（正常終了）
+    // Signal handling (graceful shutdown)
     const signals = ['SIGINT', 'SIGTERM'];
     signals.forEach(signal => {
       process.on(signal, async () => {
-        console.log(`Received ${signal}, shutting down...`);
         await mcpServer.stop();
         process.exit(0);
       });
     });
     
-    // プロセスエラーハンドリング
+    // Process error handling
     process.on('uncaughtException', (err) => {
       console.error('Uncaught exception:', err);
       mcpServer.stop().finally(() => {
@@ -30,18 +29,19 @@ async function main() {
         process.exit(1);
       });
     });
+    
   } catch (error) {
     console.error('Error starting server:', error);
     process.exit(1);
   }
 }
 
-// エントリーポイント
+// Entry point
 if (require.main === module) {
   main();
 }
 
-// エクスポート（プログラム的に使用する場合のため）
+// Exports (for programmatic usage)
 export { mcpServer };
 export * from './wikijs/client';
-export * from './tools';
+export * from './wikijs/types';

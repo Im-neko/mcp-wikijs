@@ -1,42 +1,48 @@
-// WikiJSのページ情報
+// Wiki page information
 export interface WikiPage {
-  id: string;
+  id: number;
   path: string;
   title: string;
   description: string;
   content: string;
-  createdAt: string;
-  updatedAt: string;
+  createdAt: any;
+  updatedAt: any;
 }
 
-// 検索結果
+// Search result
 export interface SearchResult {
   pages: WikiPage[];
   totalCount: number;
 }
 
-// ページ作成パラメータ
+// Page creation parameters
 export interface CreatePageParams {
   path: string;
   title: string;
   content: string;
   description?: string;
+  tags?: string[];
+  isPublished?: boolean;
+  isPrivate?: boolean;
+  locale?: string;
+  editor?: string;
 }
 
-// ページ更新パラメータ
+// Page update parameters
 export interface UpdatePageParams {
-  id: string;
+  id: number | string;
   content?: string;
   title?: string;
   description?: string;
   path?: string;
+  tags?: string[];
+  isPublished?: boolean;
+  isPrivate?: boolean;
 }
 
-// GraphQL操作のレスポンス
-export interface GraphQLResponse<T> {
-  data: T;
-  errors?: Array<{
-    message: string;
-    path: string[];
-  }>;
+// Page tag
+export interface WikiTag {
+  id: number;
+  tag: string;
+  title: string;
 }

@@ -1,4 +1,4 @@
 #!/usr/bin/env node
 
-// 実行可能なCLIスクリプト
+// Execute the compiled main module
 require('../dist/index.js');

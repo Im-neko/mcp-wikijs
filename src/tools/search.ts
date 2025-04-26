@@ -23,11 +23,11 @@ export const searchTool: MCPTool = {
 };
 
 // 検索ツール実装
-export const searchHandler = async (params: { query: string; limit?: number }) => {
-  const { query, limit = 10 } = params;
+export const searchHandler = async (params: { query: string }) => {
+  const { query } = params;
   
   try {
-    const results = await wikiClient.searchPages(query, limit);
+    const results = await wikiClient.searchPages(query);
     return {
       results: results.pages.map(page => ({
         id: page.id,

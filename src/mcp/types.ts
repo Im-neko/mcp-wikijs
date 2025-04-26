@@ -1,11 +1,11 @@
-// MCPのツール定義型
+// MCP tool definition type
 export interface MCPTool {
   name: string;
   description: string;
   parameters: MCPToolParameters;
 }
 
-// MCPのパラメータ定義型
+// MCP parameter definition type
 export interface MCPToolParameters {
   type: 'object';
   properties: Record<string, {
@@ -17,7 +17,7 @@ export interface MCPToolParameters {
   additionalProperties: boolean;
 }
 
-// MCPのリソース定義型
+// MCP resource definition type
 export interface MCPResource {
   name: string;
   description: string;
@@ -33,7 +33,7 @@ export interface MCPResource {
   };
 }
 
-// MCPリクエスト型
+// MCP request type
 export interface MCPRequest {
   id: string;
   jsonrpc: string;
@@ -41,7 +41,7 @@ export interface MCPRequest {
   params: any;
 }
 
-// MCPレスポンス型
+// MCP response type
 export interface MCPResponse {
   id: string;
   jsonrpc: string;
