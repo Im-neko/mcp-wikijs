@@ -1,6 +1,6 @@
 {
   "name": "@im-neko/mcp-wikijs",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "MCP Server for WikiJS",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -46,6 +46,7 @@
     "dotenv": "^16.3.1",
     "graphql": "^16.8.1",
     "graphql-request": "^6.1.0",
+    "graphql-tag": "^2.12.6",
     "zod": "^3.22.4"
   },
   "devDependencies": {
