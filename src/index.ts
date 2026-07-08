@@ -2,7 +2,7 @@ import mcpServer from './mcp/server';
 import { logger } from './logging/logger';
 
 // Main function
-async function main() {
+export async function main() {
   try {
     // Start MCP server with stdio transport
     await mcpServer.start();
@@ -37,7 +37,7 @@ async function main() {
   }
 }
 
-// Entry point
+// Entry point when this file is run directly (e.g. `node dist/index.js`)
 if (require.main === module) {
   main();
 }

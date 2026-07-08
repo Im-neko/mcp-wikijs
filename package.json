@@ -1,6 +1,6 @@
 {
   "name": "@im-neko/mcp-wikijs",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "MCP Server for WikiJS",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
