@@ -4,7 +4,7 @@ An MCP (Model Context Protocol) server for [WikiJS](https://js.wiki/) that allow
 
 ## Features
 
-- Full implementation of the [Model Context Protocol](https://modelcontextprotocol.io/llms-full.txt) server specification
+- An [MCP](https://modelcontextprotocol.io/llms-full.txt) server exposing WikiJS as tools (stdio transport; no MCP resources/prompts yet)
 - Built with TypeScript for type safety and modern JavaScript features
 - Simple to use - can be started with a single npx command
 - Provides AI models with access to WikiJS content through MCP tools:
@@ -17,16 +17,33 @@ An MCP (Model Context Protocol) server for [WikiJS](https://js.wiki/) that allow
 
 ## Installation
 
-### build
+### Using npx (once published to npm)
 
-```bash
-cd mcp-wikijs
-npm run build
+No local clone or build required. Add this to your MCP client config (e.g. Claude Desktop/Code):
+
+```json
+{
+  "mcpServers": {
+    "wikijs": {
+      "command": "npx",
+      "args": ["-y", "@im-neko/mcp-wikijs"],
+      "env": {
+        "WIKIJS_URL": "https://example.com",
+        "WIKIJS_TOKEN": "YOUR_API_TOKEN"
+      }
+    }
+  }
+}
 ```
 
-### add mcp server 
+### From source (current development install)
 
-#### for claude 
+```bash
+git clone https://github.com/Im-neko/mcp-wikijs.git
+cd mcp-wikijs
+npm install
+npm run build
+```
 
 ```json
 {
@@ -82,29 +99,18 @@ See the [examples directory](./examples) for detailed usage examples, including:
 - `WIKIJS_URL`: URL of your WikiJS instance
 - `WIKIJS_TOKEN`: API token for authentication with WikiJS
 
-### MCP Server Configuration
+### Logging
 
-- `MCP_PORT`: Port for the MCP server (default: 8080)
-- `MCP_HOST`: Host for the MCP server (default: 0.0.0.0)
-- `LOG_LEVEL`: Logging level (debug, info, warn, error)
+- `LOG_LEVEL`: Logging level (debug, info, warn, error; default: info)
+
+The server communicates with its MCP client over stdio only; there is no HTTP transport or port to configure.
 
 ## Development
 
-### Standard Development
+See [Installation > From source](#from-source-current-development-install) to build locally. To inspect the server interactively:
 
 ```bash
-# Clone the repository
-git clone https://github.com/im-neko/mcp-wikijs.git
-cd mcp-wikijs
-
-# Install dependencies
-npm install
-
-# Build
-npm run build
-
-# Debug
-npx @modelcontextprotocol/inspector node dist/index.js 
+npx @modelcontextprotocol/inspector node dist/index.js
 ```
 
 ### Docker Development

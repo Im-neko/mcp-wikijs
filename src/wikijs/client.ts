@@ -7,6 +7,7 @@ import {
   UpdatePageParams
 } from './types';
 import { getSdk } from './generated/operations';
+import { logger, toErrorMessage } from '../logging/logger';
 
 // WikiJS client class
 export class WikiJSClient {
@@ -25,7 +26,8 @@ export class WikiJSClient {
   }
   
   // Search pages
-  async searchPages(query: string, limit: number = 10): Promise<SearchResult> {
+  // Note: WikiJS's search API has no limit parameter; results are not paginated here.
+  async searchPages(query: string): Promise<SearchResult> {
     try {
       const response = await this.sdk.SearchPages({ query });
       
@@ -46,8 +48,8 @@ export class WikiJSClient {
         totalCount: response.data.pages?.search.totalHits || 0
       };
     } catch (error) {
-      console.error('Error searching pages:', error);
-      throw new Error('Failed to search pages');
+      logger.error('Error searching pages', error);
+      throw new Error(toErrorMessage(error, 'Failed to search pages'));
     }
   }
   
@@ -108,8 +110,8 @@ export class WikiJSClient {
       }
       throw new Error('Invalid ID or path');
     } catch (error) {
-      console.error('Error getting page:', error);
-      throw new Error('Failed to get page');
+      logger.error('Error getting page', error);
+      throw new Error(toErrorMessage(error, 'Failed to get page'));
     }
   }
   
@@ -153,8 +155,8 @@ export class WikiJSClient {
         updatedAt: new Date().toISOString()
       };
     } catch (error) {
-      console.error('Error creating page:', error);
-      throw new Error('Failed to create page');
+      logger.error('Error creating page', error);
+      throw new Error(toErrorMessage(error, 'Failed to create page'));
     }
   }
   
@@ -198,8 +200,8 @@ export class WikiJSClient {
         updatedAt: new Date().toISOString()
       };
     } catch (error) {
-      console.error('Error updating page:', error);
-      throw new Error('Failed to update page');
+      logger.error('Error updating page', error);
+      throw new Error(toErrorMessage(error, 'Failed to update page'));
     }
   }
   
@@ -223,8 +225,8 @@ export class WikiJSClient {
       
       return true;
     } catch (error) {
-      console.error('Error deleting page:', error);
-      throw new Error('Failed to delete page');
+      logger.error('Error deleting page', error);
+      throw new Error(toErrorMessage(error, 'Failed to delete page'));
     }
   }
   
@@ -251,8 +253,8 @@ export class WikiJSClient {
         updatedAt: page.updatedAt
       }));
     } catch (error) {
-      console.error('Error listing pages:', error);
-      throw new Error('Failed to list pages');
+      logger.error('Error listing pages', error);
+      throw new Error(toErrorMessage(error, 'Failed to list pages'));
     }
   }
   
@@ -271,8 +273,8 @@ export class WikiJSClient {
         title: tag?.title || ''
       }));
     } catch (error) {
-      console.error('Error getting tags:', error);
-      throw new Error('Failed to get tags');
+      logger.error('Error getting tags', error);
+      throw new Error(toErrorMessage(error, 'Failed to get tags'));
     }
   }
 }

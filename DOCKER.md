@@ -18,7 +18,9 @@ docker-compose up
 This will start:
 - A PostgreSQL database for WikiJS
 - A WikiJS instance at http://localhost:3000
-- The MCP-WikiJS server at http://localhost:8080
+- The MCP-WikiJS server, running with hot-reload
+
+Note: the MCP server communicates over stdio (not HTTP), so it has no exposed port to browse or curl. It runs inside its container waiting for an MCP client to connect to its stdio stream.
 
 ### 2. Setup WikiJS
 
@@ -56,13 +58,13 @@ WIKIJS_TOKEN=your_api_token_here docker-compose up
 
 ### 4. Testing the Connection
 
-Once both services are running and the API token is configured, you can test the connection using:
+Once both services are running and the API token is configured, you can exercise the running container's MCP server with the MCP Inspector:
 
 ```bash
-curl http://localhost:8080/mcp.init
+docker-compose exec mcp-wikijs npx -y @modelcontextprotocol/inspector node dist/index.js
 ```
 
-If the connection is successful, you should receive a JSON response with the available tools.
+If the connection is successful, the Inspector will list the available tools (`search`, `read`, `create`, `update`, `delete`).
 
 ## Development Workflow
 

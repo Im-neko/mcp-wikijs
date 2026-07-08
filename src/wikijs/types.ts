@@ -5,8 +5,8 @@ export interface WikiPage {
   title: string;
   description: string;
   content: string;
-  createdAt: any;
-  updatedAt: any;
+  createdAt: string;
+  updatedAt: string;
 }
 
 // Search result

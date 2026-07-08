@@ -7,11 +7,6 @@ export const ConfigSchema = z.object({
     token: z.string().min(1),
     defaultLocale: z.string().default('en')
   }),
-  mcp: z.object({
-    port: z.number().int().positive().default(8080),
-    host: z.string().default('0.0.0.0'),
-    transport: z.enum(['http', 'stdio']).default('stdio')
-  }),
   logging: z.object({
     level: z.enum(['debug', 'info', 'warn', 'error']).default('info')
   })

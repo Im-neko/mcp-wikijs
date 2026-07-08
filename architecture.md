@@ -25,19 +25,17 @@
   - Create/Update
   - Delete
 
-### 3. MCP Server Implementation (`src/mcp`)
-- Model Context Protocol implementation
-- Tool definitions
-- Resource definitions
+### 3. MCP Server & Tool Definitions (`src/mcp/server.ts`)
+- Model Context Protocol server (stdio transport only)
+- Tool definitions and handlers, registered inline:
+  - `search` - Wiki document search
+  - `read` - Document retrieval
+  - `update` - Document update
+  - `create` - Document creation
+  - `delete` - Document deletion
+- No MCP resources or prompts are implemented, only tools
 
-### 4. Tool Definitions (`src/tools`)
-- `search` - Wiki document search
-- `read` - Document retrieval
-- `update` - Document update
-- `create` - Document creation
-- `delete` - Document deletion
-
-### 5. Entry Point (`src/index.ts`)
+### 4. Entry Point (`src/index.ts`)
 - Server startup
 - Signal handling
 
@@ -68,12 +66,13 @@
 - Volume mounts for persistent data and code changes
 
 ### Production Environment
-- Distributed as npm package
-- Executable via npx command
+- Distributed as an npm package (scoped: `@im-neko/mcp-wikijs`)
+- Executable via `npx -y @im-neko/mcp-wikijs`
 - Configuration via environment variables
   - `WIKIJS_URL` - WikiJS URL
   - `WIKIJS_TOKEN` - API authentication token
-  - `MCP_PORT` - MCP server port number (default: 8080)
+  - `LOG_LEVEL` - logging level (default: info)
+- Communicates with its client over stdio only; no network port is opened
 
 ## Docker Architecture
 
@@ -105,8 +104,8 @@
 
 ## Security Considerations
 
-- Secure management of authentication information
-- MCP request validation
-- Rate limiting implementation
-- Error handling and logging
-- Network isolation in Docker environment
+- The WikiJS API token is passed as a bearer header and only ever read from `WIKIJS_TOKEN`; it must not appear in logs or in errors surfaced to the MCP client (`src/logging/logger.ts` enforces this by only ever logging/rethrowing `error.message`, never the raw error object)
+- Tool parameters are validated with Zod schemas before any WikiJS call is made
+- Network isolation in Docker environment (dedicated compose network)
+- Not yet implemented: rate limiting
+

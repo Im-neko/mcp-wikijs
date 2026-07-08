@@ -12,11 +12,6 @@ const createConfig = (): Config => {
         url: process.env.WIKIJS_URL,
         token: process.env.WIKIJS_TOKEN
       },
-      mcp: {
-        port: process.env.MCP_PORT ? parseInt(process.env.MCP_PORT, 10) : undefined,
-        host: process.env.MCP_HOST,
-        transport: process.env.MCP_TRANSPORT as 'http' | 'stdio' | undefined
-      },
       logging: {
         level: process.env.LOG_LEVEL
       }

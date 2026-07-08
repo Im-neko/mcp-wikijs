@@ -1,11 +1,12 @@
 import mcpServer from './mcp/server';
+import { logger } from './logging/logger';
 
 // Main function
 async function main() {
   try {
     // Start MCP server with stdio transport
     await mcpServer.start();
-    
+
     // Signal handling (graceful shutdown)
     const signals = ['SIGINT', 'SIGTERM'];
     signals.forEach(signal => {
@@ -14,24 +15,24 @@ async function main() {
         process.exit(0);
       });
     });
-    
+
     // Process error handling
     process.on('uncaughtException', (err) => {
-      console.error('Uncaught exception:', err);
+      logger.error('Uncaught exception', err);
       mcpServer.stop().finally(() => {
         process.exit(1);
       });
     });
-    
+
     process.on('unhandledRejection', (reason) => {
-      console.error('Unhandled rejection:', reason);
+      logger.error('Unhandled rejection', reason);
       mcpServer.stop().finally(() => {
         process.exit(1);
       });
     });
-    
+
   } catch (error) {
-    console.error('Error starting server:', error);
+    logger.error('Error starting server', error);
     process.exit(1);
   }
 }

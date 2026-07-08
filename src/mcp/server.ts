@@ -2,6 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from 'zod';
 import wikiClient from '../wikijs/client';
+import { logger, toErrorMessage } from '../logging/logger';
 
 export class MCPWikiJSServer {
   private server: McpServer;
@@ -51,8 +52,8 @@ export class MCPWikiJSServer {
             ]
           };
         } catch (error) {
-          console.error('Search error:', error);
-          throw new Error('Failed to search wiki pages');
+          logger.error('Search error', error);
+          throw new Error(toErrorMessage(error, 'Failed to search wiki pages'));
         }
       }
     );
@@ -67,11 +68,14 @@ export class MCPWikiJSServer {
       },
       async (args: { id?: number; path?: string }) => {
         const { id, path } = args;
+        if (id === undefined && !path) {
+          throw new Error('Either id or path must be provided');
+        }
         try {
-          const page = id
+          const page = id !== undefined
             ? await wikiClient.getPage(id)
-            : await wikiClient.getPage(path||"");
-          
+            : await wikiClient.getPage(path as string);
+
           return {
             content: [
               {
@@ -92,8 +96,8 @@ export class MCPWikiJSServer {
             ]
           };
         } catch (error) {
-          console.error('Read error:', error);
-          throw new Error('Failed to read wiki page');
+          logger.error('Read error', error);
+          throw new Error(toErrorMessage(error, 'Failed to read wiki page'));
         }
       }
     );
@@ -132,8 +136,8 @@ export class MCPWikiJSServer {
             ]
           };
         } catch (error) {
-          console.error('Create error:', error);
-          throw new Error('Failed to create wiki page');
+          logger.error('Create error', error);
+          throw new Error(toErrorMessage(error, 'Failed to create wiki page'));
         }
       }
     );
@@ -172,8 +176,8 @@ export class MCPWikiJSServer {
             ]
           };
         } catch (error) {
-          console.error('Update error:', error);
-          throw new Error('Failed to update wiki page');
+          logger.error('Update error', error);
+          throw new Error(toErrorMessage(error, 'Failed to update wiki page'));
         }
       }
     );
@@ -202,8 +206,8 @@ export class MCPWikiJSServer {
             ]
           };
         } catch (error) {
-          console.error('Delete error:', error);
-          throw new Error('Failed to delete wiki page');
+          logger.error('Delete error', error);
+          throw new Error(toErrorMessage(error, 'Failed to delete wiki page'));
         }
       }
     );
@@ -215,7 +219,7 @@ export class MCPWikiJSServer {
       // Connect server to stdio transport
       await this.server.connect(this.transport);
     } catch (error) {
-      console.error('Failed to start MCP server:', error);
+      logger.error('Failed to start MCP server', error);
       throw error;
     }
   }

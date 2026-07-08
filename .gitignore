@@ -2,6 +2,9 @@
 node_modules/
 jspm_packages/
 
+# Local dev-tool artifacts unrelated to this project (e.g. cipher MCP session DB)
+data/
+
 # TypeScript output directory
 dist/
 build/
