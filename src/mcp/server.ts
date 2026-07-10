@@ -2,6 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from 'zod';
 import wikiClient from '../wikijs/client';
+import { PageOrderBy, PageOrderByDirection, PageTreeMode } from '../wikijs/generated/operations';
 import { logger, toErrorMessage } from '../logging/logger';
 
 export class MCPWikiJSServer {
@@ -58,9 +59,101 @@ export class MCPWikiJSServer {
       }
     );
 
+    // List tool
+    this.server.tool(
+      "list",
+      "List wiki pages, optionally filtered by tags. Useful for browsing when you don't have a search query or exact path.",
+      {
+        limit: z.number().optional().describe("Maximum number of pages to return"),
+        tags: z.array(z.string()).optional().describe("Only return pages having all of these tags"),
+        locale: z.string().optional().describe("Locale to filter by (defaults to the server's configured default locale)"),
+        orderBy: z.nativeEnum(PageOrderBy).optional().describe("Field to order results by"),
+        orderByDirection: z.nativeEnum(PageOrderByDirection).optional().describe("Order direction")
+      },
+      async (args: { limit?: number; tags?: string[]; locale?: string; orderBy?: PageOrderBy; orderByDirection?: PageOrderByDirection }) => {
+        try {
+          const pages = await wikiClient.listPages(args);
+          return {
+            content: [
+              {
+                type: "text",
+                text: JSON.stringify({
+                  pages: pages.map(page => ({
+                    id: page.id,
+                    path: page.path,
+                    title: page.title,
+                    description: page.description,
+                    isPublished: page.isPublished,
+                    isPrivate: page.isPrivate,
+                    tags: page.tags,
+                    updatedAt: page.updatedAt
+                  }))
+                })
+              }
+            ]
+          };
+        } catch (error) {
+          logger.error('List error', error);
+          throw new Error(toErrorMessage(error, 'Failed to list wiki pages'));
+        }
+      }
+    );
+
+    // Tags tool
+    this.server.tool(
+      "tags",
+      "List all tags used across the wiki",
+      {},
+      async () => {
+        try {
+          const tags = await wikiClient.getTags();
+          return {
+            content: [
+              {
+                type: "text",
+                text: JSON.stringify({ tags })
+              }
+            ]
+          };
+        } catch (error) {
+          logger.error('Tags error', error);
+          throw new Error(toErrorMessage(error, 'Failed to get wiki tags'));
+        }
+      }
+    );
+
+    // Tree tool
+    this.server.tool(
+      "tree",
+      "Browse the wiki's page/folder hierarchy at a given path or parent folder. Useful for navigating structure without knowing exact paths.",
+      {
+        path: z.string().optional().describe("Folder path to list the children of (omit for the root)"),
+        parent: z.number().optional().describe("Parent folder ID to list the children of (alternative to path)"),
+        mode: z.nativeEnum(PageTreeMode).optional().describe("Whether to return only folders, only pages, or both (default: ALL)"),
+        locale: z.string().optional().describe("Locale to filter by (defaults to the server's configured default locale)"),
+        includeAncestors: z.boolean().optional().describe("Whether to also include ancestor folders in the result")
+      },
+      async (args: { path?: string; parent?: number; mode?: PageTreeMode; locale?: string; includeAncestors?: boolean }) => {
+        try {
+          const items = await wikiClient.getPageTree(args);
+          return {
+            content: [
+              {
+                type: "text",
+                text: JSON.stringify({ items })
+              }
+            ]
+          };
+        } catch (error) {
+          logger.error('Tree error', error);
+          throw new Error(toErrorMessage(error, 'Failed to get wiki page tree'));
+        }
+      }
+    );
+
     // Read tool
     this.server.tool(
-      "read", 
+      "read",
       "Read a wiki page by ID or path",
       {
         id: z.number().optional().describe("The ID of the page to read"),
@@ -182,9 +275,42 @@ export class MCPWikiJSServer {
       }
     );
 
+    // Move tool
+    this.server.tool(
+      "move",
+      "Move or rename a wiki page by changing its path (and optionally locale)",
+      {
+        id: z.string().describe("The ID of the page to move"),
+        destinationPath: z.string().describe("The new path for the page"),
+        destinationLocale: z.string().optional().describe("The new locale for the page (defaults to the server's configured default locale)")
+      },
+      async (args: { id: string; destinationPath: string; destinationLocale?: string }) => {
+        const { id, destinationPath, destinationLocale } = args;
+        try {
+          const success = await wikiClient.movePage(id, destinationPath, destinationLocale);
+
+          return {
+            content: [
+              {
+                type: "text",
+                text: JSON.stringify({
+                  id,
+                  path: destinationPath,
+                  success
+                })
+              }
+            ]
+          };
+        } catch (error) {
+          logger.error('Move error', error);
+          throw new Error(toErrorMessage(error, 'Failed to move wiki page'));
+        }
+      }
+    );
+
     // Delete tool
     this.server.tool(
-      "delete", 
+      "delete",
       "Delete a wiki page by ID",
       {
         id: z.string().describe("The ID of the page to delete")

@@ -2,11 +2,14 @@ import { GraphQLClient } from 'graphql-request';
 import { config } from '../config';
 import {
   WikiPage,
+  WikiPageListItem,
+  WikiPageTreeItem,
+  WikiTag,
   SearchResult,
   CreatePageParams,
   UpdatePageParams
 } from './types';
-import { getSdk } from './generated/operations';
+import { getSdk, PageOrderBy, PageOrderByDirection, PageTreeMode } from './generated/operations';
 import { logger, toErrorMessage } from '../logging/logger';
 
 // WikiJS client class
@@ -230,36 +233,75 @@ export class WikiJSClient {
     }
   }
   
+  // Move (rename/relocate) a page
+  async movePage(id: string | number, destinationPath: string, destinationLocale?: string): Promise<boolean> {
+    try {
+      const numericId = typeof id === 'string' ? parseInt(id, 10) : id;
+
+      const response = await this.sdk.MovePage({
+        id: numericId,
+        destinationPath,
+        destinationLocale: destinationLocale || config.wikijs.defaultLocale || 'en'
+      });
+
+      if (response.errors) {
+        throw new Error(response.errors.map(e => e.message).join(', '));
+      }
+
+      const result = response.data.pages?.move?.responseResult;
+
+      if (!result?.succeeded) {
+        throw new Error(result?.message || 'Failed to move page');
+      }
+
+      return true;
+    } catch (error) {
+      logger.error('Error moving page', error);
+      throw new Error(toErrorMessage(error, 'Failed to move page'));
+    }
+  }
+
   // List pages
-  async listPages(params: { limit?: number, tags?: string[], locale?: string } = {}): Promise<WikiPage[]> {
+  async listPages(params: {
+    limit?: number,
+    tags?: string[],
+    locale?: string,
+    orderBy?: PageOrderBy,
+    orderByDirection?: PageOrderByDirection
+  } = {}): Promise<WikiPageListItem[]> {
     try {
       const response = await this.sdk.ListPages({
         limit: params.limit,
         tags: params.tags,
-        locale: params.locale || config.wikijs.defaultLocale || 'en'
+        locale: params.locale || config.wikijs.defaultLocale || 'en',
+        orderBy: params.orderBy,
+        orderByDirection: params.orderByDirection
       });
-      
+
       if (response.errors) {
         throw new Error(response.errors.map(e => e.message).join(', '));
       }
-      
+
       return (response.data.pages?.list || []).map(page => ({
         id: page.id,
         path: page.path,
         title: page.title || '',
         description: page.description || '',
-        content: '',
-        createdAt: '', 
-        updatedAt: page.updatedAt
+        contentType: page.contentType,
+        isPublished: page.isPublished,
+        isPrivate: page.isPrivate,
+        createdAt: page.createdAt,
+        updatedAt: page.updatedAt,
+        tags: (page.tags || []).filter((tag): tag is string => !!tag)
       }));
     } catch (error) {
       logger.error('Error listing pages', error);
       throw new Error(toErrorMessage(error, 'Failed to list pages'));
     }
   }
-  
+
   // Get all tags
-  async getTags(): Promise<{ id: number, tag: string, title: string }[]> {
+  async getTags(): Promise<WikiTag[]> {
     try {
       const response = await this.sdk.GetTags();
       
@@ -275,6 +317,44 @@ export class WikiJSClient {
     } catch (error) {
       logger.error('Error getting tags', error);
       throw new Error(toErrorMessage(error, 'Failed to get tags'));
+    }
+  }
+
+  // Get the page/folder tree for browsing the wiki's hierarchy
+  async getPageTree(params: {
+    path?: string,
+    parent?: number,
+    mode?: PageTreeMode,
+    locale?: string,
+    includeAncestors?: boolean
+  } = {}): Promise<WikiPageTreeItem[]> {
+    try {
+      const response = await this.sdk.GetPageTree({
+        path: params.path,
+        parent: params.parent,
+        mode: params.mode || PageTreeMode.All,
+        locale: params.locale || config.wikijs.defaultLocale || 'en',
+        includeAncestors: params.includeAncestors
+      });
+
+      if (response.errors) {
+        throw new Error(response.errors.map(e => e.message).join(', '));
+      }
+
+      return (response.data.pages?.tree || []).filter((item): item is NonNullable<typeof item> => !!item).map(item => ({
+        id: item.id,
+        path: item.path,
+        depth: item.depth,
+        title: item.title,
+        isPrivate: item.isPrivate,
+        isFolder: item.isFolder,
+        parent: item.parent ?? null,
+        pageId: item.pageId ?? null,
+        locale: item.locale
+      }));
+    } catch (error) {
+      logger.error('Error getting page tree', error);
+      throw new Error(toErrorMessage(error, 'Failed to get page tree'));
     }
   }
 }

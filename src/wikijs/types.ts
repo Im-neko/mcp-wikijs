@@ -15,6 +15,20 @@ export interface SearchResult {
   totalCount: number;
 }
 
+// Wiki page summary as returned by the page list query (no content)
+export interface WikiPageListItem {
+  id: number;
+  path: string;
+  title: string;
+  description: string;
+  contentType: string;
+  isPublished: boolean;
+  isPrivate: boolean;
+  createdAt: string;
+  updatedAt: string;
+  tags: string[];
+}
+
 // Page creation parameters
 export interface CreatePageParams {
   path: string;
@@ -45,4 +59,17 @@ export interface WikiTag {
   id: number;
   tag: string;
   title: string;
+}
+
+// A node in the wiki's page/folder tree
+export interface WikiPageTreeItem {
+  id: number;
+  path: string;
+  depth: number;
+  title: string;
+  isPrivate: boolean;
+  isFolder: boolean;
+  parent: number | null;
+  pageId: number | null;
+  locale: string;
 }

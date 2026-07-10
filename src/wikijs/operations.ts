@@ -83,6 +83,25 @@ export const LIST_PAGES = gql`
   }
 `;
 
+// Get the page tree (for browsing the wiki's folder/page hierarchy)
+export const GET_PAGE_TREE = gql`
+  query GetPageTree($path: String, $parent: Int, $mode: PageTreeMode!, $locale: String!, $includeAncestors: Boolean) {
+    pages {
+      tree(path: $path, parent: $parent, mode: $mode, locale: $locale, includeAncestors: $includeAncestors) {
+        id
+        path
+        depth
+        title
+        isPrivate
+        isFolder
+        parent
+        pageId
+        locale
+      }
+    }
+  }
+`;
+
 // Get all tags
 export const GET_TAGS = gql`
   query GetTags {
@@ -192,6 +211,22 @@ export const UPDATE_PAGE = gql`
           id
           path
           title
+        }
+      }
+    }
+  }
+`;
+
+// Move (rename/relocate) page
+export const MOVE_PAGE = gql`
+  mutation MovePage($id: Int!, $destinationPath: String!, $destinationLocale: String!) {
+    pages {
+      move(id: $id, destinationPath: $destinationPath, destinationLocale: $destinationLocale) {
+        responseResult {
+          succeeded
+          errorCode
+          slug
+          message
         }
       }
     }

@@ -1726,6 +1726,17 @@ export type ListPagesQueryVariables = Exact<{
 
 export type ListPagesQuery = { pages?: { list: Array<{ id: number, path: string, title?: string | null, description?: string | null, contentType: string, isPublished: boolean, isPrivate: boolean, createdAt: any, updatedAt: any, tags?: Array<string | null> | null }> } | null };
 
+export type GetPageTreeQueryVariables = Exact<{
+  path?: InputMaybe<Scalars['String']['input']>;
+  parent?: InputMaybe<Scalars['Int']['input']>;
+  mode: PageTreeMode;
+  locale: Scalars['String']['input'];
+  includeAncestors?: InputMaybe<Scalars['Boolean']['input']>;
+}>;
+
+
+export type GetPageTreeQuery = { pages?: { tree?: Array<{ id: number, path: string, depth: number, title: string, isPrivate: boolean, isFolder: boolean, parent?: number | null, pageId?: number | null, locale: string } | null> | null } | null };
+
 export type GetTagsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
@@ -1769,6 +1780,15 @@ export type UpdatePageMutationVariables = Exact<{
 
 
 export type UpdatePageMutation = { pages?: { update?: { responseResult: { succeeded: boolean, errorCode: number, slug: string, message?: string | null }, page?: { id: number, path: string, title: string } | null } | null } | null };
+
+export type MovePageMutationVariables = Exact<{
+  id: Scalars['Int']['input'];
+  destinationPath: Scalars['String']['input'];
+  destinationLocale: Scalars['String']['input'];
+}>;
+
+
+export type MovePageMutation = { pages?: { move?: { responseResult?: { succeeded: boolean, errorCode: number, slug: string, message?: string | null } | null } | null } | null };
 
 export type DeletePageMutationVariables = Exact<{
   id: Scalars['Int']['input'];
@@ -1853,6 +1873,29 @@ export const ListPagesDocument = gql`
   }
 }
     `;
+export const GetPageTreeDocument = gql`
+    query GetPageTree($path: String, $parent: Int, $mode: PageTreeMode!, $locale: String!, $includeAncestors: Boolean) {
+  pages {
+    tree(
+      path: $path
+      parent: $parent
+      mode: $mode
+      locale: $locale
+      includeAncestors: $includeAncestors
+    ) {
+      id
+      path
+      depth
+      title
+      isPrivate
+      isFolder
+      parent
+      pageId
+      locale
+    }
+  }
+}
+    `;
 export const GetTagsDocument = gql`
     query GetTags {
   pages {
@@ -1933,6 +1976,24 @@ export const UpdatePageDocument = gql`
   }
 }
     `;
+export const MovePageDocument = gql`
+    mutation MovePage($id: Int!, $destinationPath: String!, $destinationLocale: String!) {
+  pages {
+    move(
+      id: $id
+      destinationPath: $destinationPath
+      destinationLocale: $destinationLocale
+    ) {
+      responseResult {
+        succeeded
+        errorCode
+        slug
+        message
+      }
+    }
+  }
+}
+    `;
 export const DeletePageDocument = gql`
     mutation DeletePage($id: Int!) {
   pages {
@@ -1956,9 +2017,11 @@ const SearchPagesDocumentString = print(SearchPagesDocument);
 const GetPageByIdDocumentString = print(GetPageByIdDocument);
 const GetPageByPathDocumentString = print(GetPageByPathDocument);
 const ListPagesDocumentString = print(ListPagesDocument);
+const GetPageTreeDocumentString = print(GetPageTreeDocument);
 const GetTagsDocumentString = print(GetTagsDocument);
 const CreatePageDocumentString = print(CreatePageDocument);
 const UpdatePageDocumentString = print(UpdatePageDocument);
+const MovePageDocumentString = print(MovePageDocument);
 const DeletePageDocumentString = print(DeletePageDocument);
 export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = defaultWrapper) {
   return {
@@ -1974,6 +2037,9 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
     ListPages(variables?: ListPagesQueryVariables, requestHeaders?: GraphQLClientRequestHeaders): Promise<{ data: ListPagesQuery; errors?: GraphQLError[]; extensions?: any; headers: Headers; status: number; }> {
         return withWrapper((wrappedRequestHeaders) => client.rawRequest<ListPagesQuery>(ListPagesDocumentString, variables, {...requestHeaders, ...wrappedRequestHeaders}), 'ListPages', 'query', variables);
     },
+    GetPageTree(variables: GetPageTreeQueryVariables, requestHeaders?: GraphQLClientRequestHeaders): Promise<{ data: GetPageTreeQuery; errors?: GraphQLError[]; extensions?: any; headers: Headers; status: number; }> {
+        return withWrapper((wrappedRequestHeaders) => client.rawRequest<GetPageTreeQuery>(GetPageTreeDocumentString, variables, {...requestHeaders, ...wrappedRequestHeaders}), 'GetPageTree', 'query', variables);
+    },
     GetTags(variables?: GetTagsQueryVariables, requestHeaders?: GraphQLClientRequestHeaders): Promise<{ data: GetTagsQuery; errors?: GraphQLError[]; extensions?: any; headers: Headers; status: number; }> {
         return withWrapper((wrappedRequestHeaders) => client.rawRequest<GetTagsQuery>(GetTagsDocumentString, variables, {...requestHeaders, ...wrappedRequestHeaders}), 'GetTags', 'query', variables);
     },
@@ -1982,6 +2048,9 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
     },
     UpdatePage(variables: UpdatePageMutationVariables, requestHeaders?: GraphQLClientRequestHeaders): Promise<{ data: UpdatePageMutation; errors?: GraphQLError[]; extensions?: any; headers: Headers; status: number; }> {
         return withWrapper((wrappedRequestHeaders) => client.rawRequest<UpdatePageMutation>(UpdatePageDocumentString, variables, {...requestHeaders, ...wrappedRequestHeaders}), 'UpdatePage', 'mutation', variables);
+    },
+    MovePage(variables: MovePageMutationVariables, requestHeaders?: GraphQLClientRequestHeaders): Promise<{ data: MovePageMutation; errors?: GraphQLError[]; extensions?: any; headers: Headers; status: number; }> {
+        return withWrapper((wrappedRequestHeaders) => client.rawRequest<MovePageMutation>(MovePageDocumentString, variables, {...requestHeaders, ...wrappedRequestHeaders}), 'MovePage', 'mutation', variables);
     },
     DeletePage(variables: DeletePageMutationVariables, requestHeaders?: GraphQLClientRequestHeaders): Promise<{ data: DeletePageMutation; errors?: GraphQLError[]; extensions?: any; headers: Headers; status: number; }> {
         return withWrapper((wrappedRequestHeaders) => client.rawRequest<DeletePageMutation>(DeletePageDocumentString, variables, {...requestHeaders, ...wrappedRequestHeaders}), 'DeletePage', 'mutation', variables);
