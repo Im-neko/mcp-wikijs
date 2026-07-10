@@ -10,7 +10,8 @@ const createConfig = (): Config => {
     const config = ConfigSchema.parse({
       wikijs: {
         url: process.env.WIKIJS_URL,
-        token: process.env.WIKIJS_TOKEN
+        token: process.env.WIKIJS_TOKEN,
+        defaultLocale: process.env.WIKIJS_DEFAULT_LOCALE
       },
       logging: {
         level: process.env.LOG_LEVEL
