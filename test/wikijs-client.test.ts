@@ -126,7 +126,7 @@ describe('WikiJSClient', () => {
         pages: {
           update: {
             responseResult: { succeeded: true },
-            page: { id: 7, path: 'docs/a', title: 'Old title', isPublished }
+            page: { id: 7, path: 'docs/a', title: 'Old title', isPublished, updatedAt: 'new-u' }
           }
         }
       }
@@ -155,7 +155,7 @@ describe('WikiJSClient', () => {
         scriptCss: '.a{}',
         scriptJs: undefined
       });
-      expect(page).toMatchObject({ id: 7, isPublished: true, tags: ['x', 'y'], content: 'Old content', description: 'New description' });
+      expect(page).toMatchObject({ id: 7, isPublished: true, updatedAt: 'new-u', tags: ['x', 'y'], content: 'Old content', description: 'New description' });
     });
 
     it('does not republish an unpublished page when isPublished is omitted', async () => {

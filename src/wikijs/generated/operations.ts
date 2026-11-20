@@ -1779,7 +1779,7 @@ export type UpdatePageMutationVariables = Exact<{
 }>;
 
 
-export type UpdatePageMutation = { pages?: { update?: { responseResult: { succeeded: boolean, errorCode: number, slug: string, message?: string | null }, page?: { id: number, path: string, title: string, isPublished: boolean } | null } | null } | null };
+export type UpdatePageMutation = { pages?: { update?: { responseResult: { succeeded: boolean, errorCode: number, slug: string, message?: string | null }, page?: { id: number, path: string, title: string, isPublished: boolean, updatedAt: any } | null } | null } | null };
 
 export type MovePageMutationVariables = Exact<{
   id: Scalars['Int']['input'];
@@ -1990,6 +1990,7 @@ export const UpdatePageDocument = gql`
         path
         title
         isPublished
+        updatedAt
       }
     }
   }

@@ -238,7 +238,7 @@ export class WikiJSClient {
         description: merged.description,
         content: merged.content,
         createdAt: current.createdAt,
-        updatedAt: new Date().toISOString(),
+        updatedAt: result.page.updatedAt,
         isPublished: result.page.isPublished,
         isPrivate: merged.isPrivate,
         tags: merged.tags

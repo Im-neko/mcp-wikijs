@@ -230,6 +230,7 @@ export const UPDATE_PAGE = gql`
           path
           title
           isPublished
+          updatedAt
         }
       }
     }

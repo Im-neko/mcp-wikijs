@@ -286,7 +286,7 @@ export class MCPWikiJSServer {
     // Publish tool
     this.server.tool(
       "publish",
-      "Publish or unpublish a wiki page without changing its content. Unpublished pages are hidden from regular readers.",
+      "Publish or unpublish a wiki page without changing its content. Unpublished pages are hidden from regular readers. This is saved as a normal page update (new history entry, re-render).",
       {
         id: z.string().describe("The ID of the page to publish or unpublish"),
         published: z.boolean().optional().describe("true to publish, false to unpublish (default: true)")
