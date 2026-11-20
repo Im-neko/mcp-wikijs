@@ -1705,7 +1705,7 @@ export type GetPageByIdQueryVariables = Exact<{
 }>;
 
 
-export type GetPageByIdQuery = { pages?: { single?: { id: number, path: string, title: string, description: string, content: string, createdAt: any, updatedAt: any, editor: string, locale: string } | null } | null };
+export type GetPageByIdQuery = { pages?: { single?: { id: number, path: string, title: string, description: string, content: string, createdAt: any, updatedAt: any, editor: string, locale: string, isPublished: boolean, isPrivate: boolean, publishStartDate: any, publishEndDate: any, scriptCss?: string | null, scriptJs?: string | null, tags: Array<{ tag: string } | null> } | null } | null };
 
 export type GetPageByPathQueryVariables = Exact<{
   path: Scalars['String']['input'];
@@ -1713,7 +1713,7 @@ export type GetPageByPathQueryVariables = Exact<{
 }>;
 
 
-export type GetPageByPathQuery = { pages?: { singleByPath?: { id: number, path: string, title: string, description: string, content: string, createdAt: any, updatedAt: any, editor: string, locale: string } | null } | null };
+export type GetPageByPathQuery = { pages?: { singleByPath?: { id: number, path: string, title: string, description: string, content: string, createdAt: any, updatedAt: any, editor: string, locale: string, isPublished: boolean, isPrivate: boolean, publishStartDate: any, publishEndDate: any, scriptCss?: string | null, scriptJs?: string | null, tags: Array<{ tag: string } | null> } | null } | null };
 
 export type ListPagesQueryVariables = Exact<{
   limit?: InputMaybe<Scalars['Int']['input']>;
@@ -1779,7 +1779,7 @@ export type UpdatePageMutationVariables = Exact<{
 }>;
 
 
-export type UpdatePageMutation = { pages?: { update?: { responseResult: { succeeded: boolean, errorCode: number, slug: string, message?: string | null }, page?: { id: number, path: string, title: string } | null } | null } | null };
+export type UpdatePageMutation = { pages?: { update?: { responseResult: { succeeded: boolean, errorCode: number, slug: string, message?: string | null }, page?: { id: number, path: string, title: string, isPublished: boolean, updatedAt: any } | null } | null } | null };
 
 export type MovePageMutationVariables = Exact<{
   id: Scalars['Int']['input'];
@@ -1828,6 +1828,15 @@ export const GetPageByIdDocument = gql`
       updatedAt
       editor
       locale
+      isPublished
+      isPrivate
+      publishStartDate
+      publishEndDate
+      scriptCss
+      scriptJs
+      tags {
+        tag
+      }
     }
   }
 }
@@ -1845,6 +1854,15 @@ export const GetPageByPathDocument = gql`
       updatedAt
       editor
       locale
+      isPublished
+      isPrivate
+      publishStartDate
+      publishEndDate
+      scriptCss
+      scriptJs
+      tags {
+        tag
+      }
     }
   }
 }
@@ -1971,6 +1989,8 @@ export const UpdatePageDocument = gql`
         id
         path
         title
+        isPublished
+        updatedAt
       }
     }
   }

@@ -9,6 +9,13 @@ export interface WikiPage {
   updatedAt: string;
 }
 
+// Wiki page including publication state and tags (as returned when reading a single page)
+export interface WikiPageDetail extends WikiPage {
+  isPublished: boolean;
+  isPrivate: boolean;
+  tags: string[];
+}
+
 // Search result
 export interface SearchResult {
   pages: WikiPage[];

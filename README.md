@@ -81,8 +81,11 @@ For detailed instructions, see the [Docker guide](./DOCKER.md).
 - **search** - Search for wiki pages by query
 - **read** - Read a wiki page by ID or path
 - **create** - Create a new wiki page
-- **update** - Update an existing wiki page
+- **update** - Update an existing wiki page (omitted fields, including published state and tags, keep their current values)
+- **publish** - Publish or unpublish a wiki page without changing its content (saved as a normal page update, so it adds a history entry)
 - **delete** - Delete a wiki page by ID
+
+Note: `update` and `publish` first read the page's current state, so the API token needs the `manage:pages` permission (the same one `read` needs).
 
 ## Examples
 
