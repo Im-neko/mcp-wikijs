@@ -178,6 +178,9 @@ export class MCPWikiJSServer {
                   path: page.path,
                   title: page.title,
                   description: page.description || '',
+                  isPublished: page.isPublished,
+                  isPrivate: page.isPrivate,
+                  tags: page.tags,
                   createdAt: page.createdAt,
                   updatedAt: page.updatedAt
                 })
@@ -237,22 +240,26 @@ export class MCPWikiJSServer {
 
     // Update tool
     this.server.tool(
-      "update", 
-      "Update an existing wiki page",
+      "update",
+      "Update an existing wiki page. Fields you omit keep the page's current value (including its published state and tags).",
       {
         id: z.string().describe("The ID of the page to update"),
         content: z.string().optional().describe("New content for the page in Markdown format"),
         title: z.string().optional().describe("New title for the page"),
-        description: z.string().optional().describe("New description for the page")
+        description: z.string().optional().describe("New description for the page"),
+        isPublished: z.boolean().optional().describe("Set the published state (omit to keep the current state)"),
+        tags: z.array(z.string()).optional().describe("Replace the page's tags with exactly these (omit to keep the current tags)")
       },
-      async (args: { id: string; content?: string; title?: string; description?: string }) => {
-        const { id, content, title, description } = args;
+      async (args: { id: string; content?: string; title?: string; description?: string; isPublished?: boolean; tags?: string[] }) => {
+        const { id, content, title, description, isPublished, tags } = args;
         try {
           const page = await wikiClient.updatePage({
             id,
             content,
             title,
-            description
+            description,
+            isPublished,
+            tags
           });
           
           return {
@@ -263,6 +270,7 @@ export class MCPWikiJSServer {
                   id: page.id,
                   path: page.path,
                   title: page.title,
+                  isPublished: page.isPublished,
                   success: true
                 })
               }
@@ -271,6 +279,40 @@ export class MCPWikiJSServer {
         } catch (error) {
           logger.error('Update error', error);
           throw new Error(toErrorMessage(error, 'Failed to update wiki page'));
+        }
+      }
+    );
+
+    // Publish tool
+    this.server.tool(
+      "publish",
+      "Publish or unpublish a wiki page without changing its content. Unpublished pages are hidden from regular readers.",
+      {
+        id: z.string().describe("The ID of the page to publish or unpublish"),
+        published: z.boolean().optional().describe("true to publish, false to unpublish (default: true)")
+      },
+      async (args: { id: string; published?: boolean }) => {
+        const { id, published = true } = args;
+        try {
+          const page = await wikiClient.setPublished(id, published);
+
+          return {
+            content: [
+              {
+                type: "text",
+                text: JSON.stringify({
+                  id: page.id,
+                  path: page.path,
+                  title: page.title,
+                  isPublished: page.isPublished,
+                  success: true
+                })
+              }
+            ]
+          };
+        } catch (error) {
+          logger.error('Publish error', error);
+          throw new Error(toErrorMessage(error, 'Failed to change wiki page published state'));
         }
       }
     );

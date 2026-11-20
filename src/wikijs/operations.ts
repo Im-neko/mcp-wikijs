@@ -33,6 +33,15 @@ export const GET_PAGE_BY_ID = gql`
         updatedAt
         editor
         locale
+        isPublished
+        isPrivate
+        publishStartDate
+        publishEndDate
+        scriptCss
+        scriptJs
+        tags {
+          tag
+        }
       }
     }
   }
@@ -52,6 +61,15 @@ export const GET_PAGE_BY_PATH = gql`
         updatedAt
         editor
         locale
+        isPublished
+        isPrivate
+        publishStartDate
+        publishEndDate
+        scriptCss
+        scriptJs
+        tags {
+          tag
+        }
       }
     }
   }
@@ -211,6 +229,7 @@ export const UPDATE_PAGE = gql`
           id
           path
           title
+          isPublished
         }
       }
     }

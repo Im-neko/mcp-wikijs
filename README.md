@@ -81,7 +81,8 @@ For detailed instructions, see the [Docker guide](./DOCKER.md).
 - **search** - Search for wiki pages by query
 - **read** - Read a wiki page by ID or path
 - **create** - Create a new wiki page
-- **update** - Update an existing wiki page
+- **update** - Update an existing wiki page (omitted fields, including published state and tags, keep their current values)
+- **publish** - Publish or unpublish a wiki page without changing its content
 - **delete** - Delete a wiki page by ID
 
 ## Examples

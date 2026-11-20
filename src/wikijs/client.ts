@@ -2,6 +2,7 @@ import { GraphQLClient } from 'graphql-request';
 import { config } from '../config';
 import {
   WikiPage,
+  WikiPageDetail,
   WikiPageListItem,
   WikiPageTreeItem,
   WikiTag,
@@ -10,7 +11,35 @@ import {
   UpdatePageParams
 } from './types';
 import { getSdk, PageOrderBy, PageOrderByDirection, PageTreeMode } from './generated/operations';
-import { logger, toErrorMessage } from '../logging/logger';
+import { logger, toErrorMessage, formatGraphQLErrors } from '../logging/logger';
+
+interface PageDetailFields {
+  id: number;
+  path: string;
+  title: string;
+  description: string;
+  content: string;
+  createdAt: string;
+  updatedAt: string;
+  isPublished: boolean;
+  isPrivate: boolean;
+  tags: Array<{ tag: string } | null>;
+}
+
+function toWikiPageDetail(page: PageDetailFields): WikiPageDetail {
+  return {
+    id: page.id,
+    path: page.path,
+    title: page.title,
+    description: page.description,
+    content: page.content,
+    createdAt: page.createdAt,
+    updatedAt: page.updatedAt,
+    isPublished: page.isPublished,
+    isPrivate: page.isPrivate,
+    tags: (page.tags || []).filter((tag): tag is { tag: string } => !!tag).map(tag => tag.tag)
+  };
+}
 
 // WikiJS client class
 export class WikiJSClient {
@@ -35,7 +64,7 @@ export class WikiJSClient {
       const response = await this.sdk.SearchPages({ query });
       
       if (response.errors) {
-        throw new Error(response.errors.map(e => e.message).join(', '));
+        throw new Error(formatGraphQLErrors(response.errors));
       }
       
       return {
@@ -57,7 +86,7 @@ export class WikiJSClient {
   }
   
   // Get page by ID or path
-  async getPage(idOrPath: number | string): Promise<WikiPage> {
+  async getPage(idOrPath: number | string): Promise<WikiPageDetail> {
     try {
       let response;
       
@@ -66,7 +95,7 @@ export class WikiJSClient {
         response = await this.sdk.GetPageById({ id: idOrPath });
         
         if (response.errors) {
-          throw new Error(response.errors.map(e => e.message).join(', '));
+          throw new Error(formatGraphQLErrors(response.errors));
         }
         
         const page = response.data.pages?.single;
@@ -75,15 +104,7 @@ export class WikiJSClient {
           throw new Error('Page not found');
         }
         
-        return {
-          id: page.id,
-          path: page.path,
-          title: page.title,
-          description: page.description,
-          content: page.content,
-          createdAt: page.createdAt,
-          updatedAt: page.updatedAt
-        };
+        return toWikiPageDetail(page);
       } else if (typeof idOrPath === 'string') {
         // Get page by path - need locale for this API
         response = await this.sdk.GetPageByPath({ 
@@ -92,7 +113,7 @@ export class WikiJSClient {
         });
         
         if (response.errors) {
-          throw new Error(response.errors.map(e => e.message).join(', '));
+          throw new Error(formatGraphQLErrors(response.errors));
         }
         
         const page = response.data.pages?.singleByPath;
@@ -101,15 +122,7 @@ export class WikiJSClient {
           throw new Error('Page not found');
         }
         
-        return {
-          id: page.id,
-          path: page.path,
-          title: page.title,
-          description: page.description,
-          content: page.content,
-          createdAt: page.createdAt,
-          updatedAt: page.updatedAt
-        };
+        return toWikiPageDetail(page);
       }
       throw new Error('Invalid ID or path');
     } catch (error) {
@@ -135,7 +148,7 @@ export class WikiJSClient {
       });
       
       if (response.errors) {
-        throw new Error(response.errors.map(e => e.message).join(', '));
+        throw new Error(formatGraphQLErrors(response.errors));
       }
       
       const result = response.data.pages?.create;
@@ -163,51 +176,85 @@ export class WikiJSClient {
     }
   }
   
-  // Update page
-  async updatePage(params: UpdatePageParams): Promise<WikiPage> {
+  // Update page.
+  // WikiJS's pages.update overwrites isPublished (false unless true), the publish dates and the
+  // scripts, requires non-empty content, and throws on undefined tags. Omitted fields are therefore
+  // filled from the page's current state so a partial update never unpublishes or strips a page.
+  async updatePage(params: UpdatePageParams): Promise<WikiPageDetail> {
     try {
       // Convert ID to numeric
       const numericId = typeof params.id === 'string' ? parseInt(params.id, 10) : params.id;
-      
+
+      const currentResponse = await this.sdk.GetPageById({ id: numericId });
+
+      if (currentResponse.errors) {
+        throw new Error(formatGraphQLErrors(currentResponse.errors));
+      }
+
+      const currentPage = currentResponse.data.pages?.single;
+
+      if (!currentPage) {
+        throw new Error('Page not found');
+      }
+
+      const current = toWikiPageDetail(currentPage);
+      const merged = {
+        content: params.content ?? current.content,
+        description: params.description ?? current.description,
+        title: params.title ?? current.title,
+        tags: params.tags ?? current.tags,
+        isPublished: params.isPublished ?? current.isPublished,
+        isPrivate: params.isPrivate ?? current.isPrivate
+      };
+
       const response = await this.sdk.UpdatePage({
         id: numericId,
-        content: params.content,
-        description: params.description,
-        title: params.title,
-        tags: params.tags,
-        isPublished: params.isPublished,
-        isPrivate: params.isPrivate
+        ...merged,
+        // WikiJS treats an empty value as "no date" / "no script", so only forward non-empty ones.
+        publishStartDate: currentPage.publishStartDate || undefined,
+        publishEndDate: currentPage.publishEndDate || undefined,
+        scriptCss: currentPage.scriptCss || undefined,
+        scriptJs: currentPage.scriptJs || undefined
       });
-      
+
       if (response.errors) {
-        throw new Error(response.errors.map(e => e.message).join(', '));
+        throw new Error(formatGraphQLErrors(response.errors));
       }
-      
+
       const result = response.data.pages?.update;
-      
+
       if (!result?.responseResult.succeeded) {
         throw new Error(result?.responseResult.message || 'Failed to update page');
       }
-      
+
       if (!result.page) {
         throw new Error('Page was updated but no data was returned');
       }
-      
+
       return {
         id: result.page.id,
         path: result.page.path,
         title: result.page.title,
-        description: params.description || '',
-        content: params.content || '',
-        createdAt: '',
-        updatedAt: new Date().toISOString()
+        description: merged.description,
+        content: merged.content,
+        createdAt: current.createdAt,
+        updatedAt: new Date().toISOString(),
+        isPublished: result.page.isPublished,
+        isPrivate: merged.isPrivate,
+        tags: merged.tags
       };
     } catch (error) {
       logger.error('Error updating page', error);
       throw new Error(toErrorMessage(error, 'Failed to update page'));
     }
   }
-  
+
+  // Publish or unpublish a page. Goes through pages.update so the page is re-rendered,
+  // re-indexed and versioned like any other content update.
+  async setPublished(id: string | number, published: boolean): Promise<WikiPageDetail> {
+    return this.updatePage({ id, isPublished: published });
+  }
+
   // Delete page
   async deletePage(id: string | number): Promise<boolean> {
     try {
@@ -217,7 +264,7 @@ export class WikiJSClient {
       const response = await this.sdk.DeletePage({ id: numericId });
       
       if (response.errors) {
-        throw new Error(response.errors.map(e => e.message).join(', '));
+        throw new Error(formatGraphQLErrors(response.errors));
       }
       
       const result = response.data.pages?.delete?.responseResult;
@@ -245,7 +292,7 @@ export class WikiJSClient {
       });
 
       if (response.errors) {
-        throw new Error(response.errors.map(e => e.message).join(', '));
+        throw new Error(formatGraphQLErrors(response.errors));
       }
 
       const result = response.data.pages?.move?.responseResult;
@@ -279,7 +326,7 @@ export class WikiJSClient {
       });
 
       if (response.errors) {
-        throw new Error(response.errors.map(e => e.message).join(', '));
+        throw new Error(formatGraphQLErrors(response.errors));
       }
 
       return (response.data.pages?.list || []).map(page => ({
@@ -306,7 +353,7 @@ export class WikiJSClient {
       const response = await this.sdk.GetTags();
       
       if (response.errors) {
-        throw new Error(response.errors.map(e => e.message).join(', '));
+        throw new Error(formatGraphQLErrors(response.errors));
       }
       
       return (response.data.pages?.tags || []).map(tag => ({
@@ -338,7 +385,7 @@ export class WikiJSClient {
       });
 
       if (response.errors) {
-        throw new Error(response.errors.map(e => e.message).join(', '));
+        throw new Error(formatGraphQLErrors(response.errors));
       }
 
       return (response.data.pages?.tree || []).filter((item): item is NonNullable<typeof item> => !!item).map(item => ({
